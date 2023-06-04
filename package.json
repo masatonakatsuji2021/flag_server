@@ -1,0 +1,6 @@
+{
+    "name":"@flagfw/server",
+    "description":"webserver package.",
+    "author": "masato nakatsuji",
+    "version":"1.0.0"
+}
