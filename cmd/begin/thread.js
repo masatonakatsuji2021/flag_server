@@ -1,17 +1,22 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const os = require("os");
-const cluster_1 = require("cluster");
+const cluster = require("cluster");
+const Cli_1 = require("@flagfw/flag/bin/Cli");
 const http_1 = require("./http");
 const https_1 = require("./https");
-if (cluster_1.default.isPrimary) {
+// @ts-ignore
+if (cluster.isPrimary) {
     let threadLength = os.cpus().length;
     for (let n = 0; n < threadLength; n++) {
-        cluster_1.default.setupPrimary({
+        // @ts-ignore
+        cluster.setupPrimary({
             exec: __dirname + "/thread.js",
             args: ["-number", n.toString()],
         });
-        cluster_1.default.fork();
+        // @ts-ignore
+        const c = cluster.fork();
+        Cli_1.default.outn("Listen Thread(" + n + ") PID = " + c.process.pid);
     }
 }
 else {

@@ -9,6 +9,41 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = (listenObject) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log("server listen....");
+const Util_1 = require("@flagfw/server/bin/common/Util");
+exports.default = (result) => __awaiter(void 0, void 0, void 0, function* () {
+    const servers = Util_1.default.getServers(1);
+    for (let n = 0; n < servers.length; n++) {
+        const server = servers[n];
+        if (server.port !== result.port) {
+            continue;
+        }
+        // module load...
+        if (server.modules) {
+            const c = Object.keys(server.modules);
+            for (let n2 = 0; n2 < c.length; n2++) {
+                const moduleName = c[n2];
+                const moduleData = server.modules[moduleName];
+                let modulePath;
+                try {
+                    const buffer = "@flagfw/server_module_" + moduleName;
+                    modulePath = require.resolve(buffer);
+                }
+                catch (err) { }
+                try {
+                    const buffer = moduleName;
+                    modulePath = require.resolve(buffer);
+                }
+                catch (err) { }
+                if (!modulePath) {
+                    continue;
+                }
+                console.log(modulePath);
+            }
+        }
+        // callback...
+        if (server.callback) {
+            yield server.callback(result);
+        }
+    }
+    result.res.end();
 });

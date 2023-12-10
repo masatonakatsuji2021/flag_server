@@ -4,5 +4,5 @@ import ServerUtil from "@flagfw/server/bin/common/Util";
 export default ()=>{
 
     FlagCLI.outn("server begin");;  
-//    require("./thread.js");
+    require("./thread.js");
 };

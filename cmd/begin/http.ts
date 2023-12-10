@@ -1,14 +1,22 @@
 import * as http from "http";
 import listen from "./listen";
+import ServerUtil from "@flagfw/server/bin/common/Util";
 
 export default ()=>{
-    const Http = http.createServer((req: http.IncomingMessage, res : http.ServerResponse<http.IncomingMessage>) => {
-        let listenObject = {
-            req: req,
-            res: res,
-            port: 80,
-        }        
-        listen(listenObject);
-    });
-    Http.listen(80);
+    
+    const ports = ServerUtil.getUsePorts(1);
+    for(let n = 0 ; n < ports.length ; n++){
+        const port = ports[n];
+        const Http = http.createServer((req: http.IncomingMessage, res : http.ServerResponse<http.IncomingMessage>) => {
+            let listenObject = {
+                req: req,
+                res: res,
+                port: port,
+            }
+            listen(listenObject);
+        });
+        Http.listen(port);
+    }
+
+
 };
