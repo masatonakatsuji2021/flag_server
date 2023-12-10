@@ -14,7 +14,12 @@ exports.default = (result) => __awaiter(void 0, void 0, void 0, function* () {
     const servers = Util_1.default.getServers(1);
     for (let n = 0; n < servers.length; n++) {
         const server = servers[n];
+        // port check
         if (server.port !== result.port) {
+            continue;
+        }
+        // disable
+        if (server.disable) {
             continue;
         }
         // module load...
@@ -37,13 +42,19 @@ exports.default = (result) => __awaiter(void 0, void 0, void 0, function* () {
                 if (!modulePath) {
                     continue;
                 }
-                console.log(modulePath);
+                const _module = require(modulePath);
+                if (!_module.default) {
+                    continue;
+                }
+                yield _module.default(result, moduleData);
             }
         }
         // callback...
         if (server.callback) {
-            yield server.callback(result);
+            //await server.callback(result);
         }
     }
+    // finally
+    result.res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
     result.res.end();
 });

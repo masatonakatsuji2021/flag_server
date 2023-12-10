@@ -7,10 +7,16 @@ export default async (result) => {
     for(let n = 0 ; n < servers.length ; n++){
         const server = servers[n];
 
+        // port check
         if(server.port !== result.port){
             continue;
         }
 
+        // disable
+        if(server.disable){
+            continue;
+        }
+        
         // module load...
         if(server.modules){
             const c = Object.keys(server.modules);
@@ -33,16 +39,21 @@ export default async (result) => {
                     continue;
                 }
 
-                console.log(modulePath);
-
+                const _module = require(modulePath);
+                if(!_module.default){
+                    continue;
+                }
+                await _module.default(result, moduleData);
             }
         }
 
         // callback...
         if(server.callback){
-            await server.callback(result);
+            //await server.callback(result);
         }
     }
 
+    // finally
+    result.res.writeHead(404, {'Content-Type': 'text/html; charset=utf-8'});
     result.res.end();   
 };
