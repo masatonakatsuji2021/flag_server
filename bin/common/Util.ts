@@ -8,31 +8,54 @@ export default class ServerUtil{
         return process.env[process.platform == "win32" ? "USERPROFILE" : "HOME"] + "/flag_servers";
     }
 
-    public static getPort(status? : number){
+    public static getServer(serverName : string){
+        const initPath = ServerUtil.getHome() + "/" + serverName+ "/" + ServerUtil.sinit;
 
-        const search = fs.readdirSync(ServerUtil.getHome() + "/" + ServerUtil.sinit);
+        if(!fs.existsSync(initPath)){
+            return;
+        }
+
+        const sinit = require(initPath);
+        if(!sinit){
+            return;
+        }
+
+        if(!sinit.default){
+            return;
+        }
+
+        return sinit.default;
+    }
+
+    public static getUsePorts(status? : number){
+
+        let ports = [];
+
+        const search = fs.readdirSync(ServerUtil.getHome());
         
         for(let n = 0 ; n < search.length ; n++){
-            const s_ = ServerUtil.getHome() + "/" + search[n] + "/" + ServerUtil.sinit;
+            const sinit = ServerUtil.getServer(search[n]);
 
-            if(!fs.existsSync(s_)){
+            if(!sinit){
                 continue;
             }
-
-            const sinit = require(s_);
 
             if(status === 1){
                 if(sinit.ssl){
                     continue;
                 }
             }
-            else{
-
+            else if(status == 2){
+                if(!sinit.ssl){
+                    continue;
+                }
             }
 
+            if(ports.indexOf(sinit.port) === -1){
+                ports.push(sinit.port);
+            }
         }
 
-
-
+        return ports;
     }
 }
