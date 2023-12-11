@@ -67,6 +67,8 @@ export default class ServerUtil{
             return;
         }
 
+        sinit.default.rootDir = ServerUtil.getHome() + "/" + serverName;
+
         return sinit.default;
     }
 

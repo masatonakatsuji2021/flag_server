@@ -43,17 +43,13 @@ export default async (result) => {
                 if(!_module.default){
                     continue;
                 }
-                await _module.default(result, moduleData);
+                await _module.default(result, moduleData, server);
             }
         }
 
         // callback...
         if(server.callback){
-            //await server.callback(result);
+            await server.callback(result);
         }
     }
-
-    // finally
-    result.res.writeHead(404, {'Content-Type': 'text/html; charset=utf-8'});
-    result.res.end();   
 };

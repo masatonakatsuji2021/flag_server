@@ -46,15 +46,12 @@ exports.default = (result) => __awaiter(void 0, void 0, void 0, function* () {
                 if (!_module.default) {
                     continue;
                 }
-                yield _module.default(result, moduleData);
+                yield _module.default(result, moduleData, server);
             }
         }
         // callback...
         if (server.callback) {
-            //await server.callback(result);
+            yield server.callback(result);
         }
     }
-    // finally
-    result.res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
-    result.res.end();
 });

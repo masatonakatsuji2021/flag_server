@@ -50,6 +50,7 @@ class ServerUtil {
         if (!sinit.default) {
             return;
         }
+        sinit.default.rootDir = ServerUtil.getHome() + "/" + serverName;
         return sinit.default;
     }
     static getUsePorts(status) {
