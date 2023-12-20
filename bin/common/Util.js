@@ -9,49 +9,50 @@ class ServerUtil {
         let servers = [];
         const search = fs.readdirSync(ServerUtil.getHome());
         for (let n = 0; n < search.length; n++) {
-            const sinit = ServerUtil.getServer(search[n]);
+            const sinit = ServerUtil.getServer(search[n], status);
             if (!sinit) {
                 continue;
-            }
-            if (status == 1) {
-                if (sinit.ssl) {
-                    continue;
-                }
-            }
-            else if (status == 2) {
-                if (!sinit.ssl) {
-                    continue;
-                }
-            }
-            if (!sinit.port) {
-                if (sinit.ssl) {
-                    sinit.port = 443;
-                }
-                else {
-                    sinit.port = 80;
-                }
-            }
-            if (!sinit.host) {
-                sinit.host = "*";
             }
             servers.push(sinit);
         }
         return servers;
     }
-    static getServer(serverName) {
+    static getServer(serverName, status) {
         const initPath = ServerUtil.getHome() + "/" + serverName + "/" + ServerUtil.sinit;
         if (!fs.existsSync(initPath)) {
             return;
         }
-        const sinit = require(initPath);
-        if (!sinit) {
+        const _sinit = require(initPath);
+        if (!_sinit) {
             return;
         }
-        if (!sinit.default) {
+        if (!_sinit.default) {
             return;
         }
-        sinit.default.rootDir = ServerUtil.getHome() + "/" + serverName;
-        return sinit.default;
+        const sinit = _sinit.default;
+        sinit.rootDir = ServerUtil.getHome() + "/" + serverName;
+        if (!sinit.port) {
+            if (sinit.ssl) {
+                sinit.port = 443;
+            }
+            else {
+                sinit.port = 80;
+            }
+        }
+        if (!sinit.host) {
+            sinit.host = "*";
+        }
+        if (status == 1) {
+            if (sinit.ssl) {
+                return;
+            }
+        }
+        else if (status == 2) {
+            if (!sinit.ssl) {
+                return;
+            }
+        }
+        return sinit;
     }
     static getUsePorts(status) {
         let ports = [];

@@ -18,8 +18,12 @@ if (cluster.isPrimary) {
         const c = cluster.fork();
         Cli_1.default.outn("Listen Thread(" + n + ") PID = " + c.process.pid);
     }
+    process.on("message", (msg) => {
+        console.log("master:mesage=" + msg);
+    });
 }
 else {
     (0, http_1.default)();
     (0, https_1.default)();
+    process.send("cluster message send...");
 }

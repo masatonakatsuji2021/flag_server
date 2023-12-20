@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Util_1 = require("@flagfw/server/bin/common/Util");
 exports.default = (result) => __awaiter(void 0, void 0, void 0, function* () {
     const servers = Util_1.default.getServers(1);
+    let decisionServer = null;
     for (let n = 0; n < servers.length; n++) {
         const server = servers[n];
         // port check
@@ -22,36 +23,51 @@ exports.default = (result) => __awaiter(void 0, void 0, void 0, function* () {
         if (server.disable) {
             continue;
         }
-        // module load...
-        if (server.modules) {
-            const c = Object.keys(server.modules);
-            for (let n2 = 0; n2 < c.length; n2++) {
-                const moduleName = c[n2];
-                const moduleData = server.modules[moduleName];
-                let modulePath;
-                try {
-                    const buffer = "@flagfw/server_module_" + moduleName;
-                    modulePath = require.resolve(buffer);
-                }
-                catch (err) { }
-                try {
-                    const buffer = moduleName;
-                    modulePath = require.resolve(buffer);
-                }
-                catch (err) { }
-                if (!modulePath) {
-                    continue;
-                }
-                const _module = require(modulePath);
-                if (!_module.default) {
-                    continue;
-                }
-                yield _module.default(result, moduleData, server);
+        decisionServer = server;
+    }
+    if (!decisionServer) {
+        result.res.writeHead(404);
+        result.res.end();
+        return;
+    }
+    // module load...
+    if (decisionServer.modules) {
+        const c = Object.keys(decisionServer.modules);
+        for (let n2 = 0; n2 < c.length; n2++) {
+            const moduleName = c[n2];
+            const moduleData = decisionServer.modules[moduleName];
+            let modulePath;
+            try {
+                const buffer = "@flagfw/server_module_" + moduleName;
+                modulePath = require.resolve(buffer);
+            }
+            catch (err) { }
+            try {
+                const buffer = moduleName;
+                modulePath = require.resolve(buffer);
+            }
+            catch (err) { }
+            if (!modulePath) {
+                continue;
+            }
+            const _module = require(modulePath);
+            if (!_module.default) {
+                continue;
+            }
+            yield _module.default(result, moduleData, decisionServer);
+            if (result.res.writableEnded) {
+                return;
             }
         }
-        // callback...
-        if (server.callback) {
-            yield server.callback(result);
+    }
+    // callback...
+    if (decisionServer.callback) {
+        yield decisionServer.callback(result);
+        if (result.res.writableEnded) {
+            return;
         }
     }
+    // finally...
+    result.res.writeHead(404);
+    result.res.end();
 });
