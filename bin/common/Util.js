@@ -5,10 +5,26 @@ class ServerUtil {
     static getHome() {
         return process.env[process.platform == "win32" ? "USERPROFILE" : "HOME"] + "/flag_servers";
     }
+    static getSetting() {
+        const filePath = ServerUtil.getHome() + ServerUtil.setting;
+        if (!fs.existsSync(filePath)) {
+            return;
+        }
+        const _setting = require(filePath);
+        if (!_setting) {
+            return;
+        }
+        const setting = _setting;
+        return setting;
+    }
     static getServers(status) {
         let servers = [];
         const search = fs.readdirSync(ServerUtil.getHome());
         for (let n = 0; n < search.length; n++) {
+            const serverName = search[n];
+            if (("/" + serverName) == ServerUtil.setting) {
+                continue;
+            }
             const sinit = ServerUtil.getServer(search[n], status);
             if (!sinit) {
                 continue;
@@ -80,4 +96,5 @@ class ServerUtil {
     }
 }
 ServerUtil.sinit = "/sinit.js";
+ServerUtil.setting = "/setting.json";
 exports.default = ServerUtil;

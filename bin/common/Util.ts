@@ -1,12 +1,32 @@
 import * as fs from "fs";
 import ServerInit from "./ServerInit";
+import Setting from "./Setting";
 
 export default class ServerUtil{
 
     public static sinit = "/sinit.js";
+    public static setting = "/setting.json";
 
     public static getHome(){
         return process.env[process.platform == "win32" ? "USERPROFILE" : "HOME"] + "/flag_servers";
+    }
+
+    public static getSetting() : Setting{
+        const filePath = ServerUtil.getHome() + ServerUtil.setting;
+
+        if(!fs.existsSync(filePath)){
+            return;
+        }
+
+        const _setting = require(filePath);
+
+        if(!_setting){
+            return;
+        }
+
+        const setting : Setting = _setting;
+
+        return setting;
     }
 
     public static getServers(status : number) : Array<ServerInit>{
@@ -16,6 +36,11 @@ export default class ServerUtil{
         const search = fs.readdirSync(ServerUtil.getHome());
         
         for(let n = 0 ; n < search.length ; n++){
+            const serverName = search[n];
+            if(("/" + serverName) == ServerUtil.setting){
+                continue;
+            }
+            
             const sinit : ServerInit = ServerUtil.getServer(search[n], status);
 
             if(!sinit){
