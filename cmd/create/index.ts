@@ -1,3 +1,4 @@
+import * as fs from "fs";
 import FlagCLI from "@flagfw/flag/bin/Cli";
 import ServerInit from "@flagfw/server/bin/common/ServerInit";
 import ServerUtil from "@flagfw/server/bin/common/Util";
@@ -115,8 +116,28 @@ export default async ()=>{
         juge == "y"
     ){
 
+        let initStr = fs.readFileSync(__dirname + "/sinitsample.js").toString();
+        initStr = initStr.split("{name}").join(server.name);
+        initStr = initStr.split("{host}").join(server.host);
+        initStr = initStr.split("{ssl}").join(server.ssl.toString());
+        initStr = initStr.split("{sslKey}").join(server.sslKey);
+        initStr = initStr.split("{sslCert}").join(server.sslCert);
+        if(server.sslCa.length){
+            let caStr = "\"" + server.sslCa.toString() + "\"";
+            initStr = initStr.split("{sslCa}").join(caStr);
+        }
+        else{
+            initStr = initStr.split("{sslCa}").join("");
+        }
+        initStr = initStr.split("{port}").join(server.port.toString());
 
+        fs.mkdirSync(ServerUtil.getHome() + "/" + server.name, {
+            recursive: true,
+        });
 
+        fs.writeFileSync(ServerUtil.getHome() + "/" + server.name + "/" + ServerUtil.sinit, initStr);
+
+        FlagCLI.br().green("....Server Create Complete!");
     }
     else{
         FlagCLI.br().redn("...Server Create Cancel!");

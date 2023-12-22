@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const fs = require("fs");
 const Cli_1 = require("@flagfw/flag/bin/Cli");
 const Util_1 = require("@flagfw/server/bin/common/Util");
 exports.default = () => __awaiter(void 0, void 0, void 0, function* () {
@@ -90,6 +91,25 @@ exports.default = () => __awaiter(void 0, void 0, void 0, function* () {
     if (!juge ||
         juge == "y" ||
         juge == "y") {
+        let initStr = fs.readFileSync(__dirname + "/sinitsample.js").toString();
+        initStr = initStr.split("{name}").join(server.name);
+        initStr = initStr.split("{host}").join(server.host);
+        initStr = initStr.split("{ssl}").join(server.ssl.toString());
+        initStr = initStr.split("{sslKey}").join(server.sslKey);
+        initStr = initStr.split("{sslCert}").join(server.sslCert);
+        if (server.sslCa.length) {
+            let caStr = "\"" + server.sslCa.toString() + "\"";
+            initStr = initStr.split("{sslCa}").join(caStr);
+        }
+        else {
+            initStr = initStr.split("{sslCa}").join("");
+        }
+        initStr = initStr.split("{port}").join(server.port.toString());
+        fs.mkdirSync(Util_1.default.getHome() + "/" + server.name, {
+            recursive: true,
+        });
+        fs.writeFileSync(Util_1.default.getHome() + "/" + server.name + "/" + Util_1.default.sinit, initStr);
+        Cli_1.default.br().green("....Server Create Complete!");
     }
     else {
         Cli_1.default.br().redn("...Server Create Cancel!");

@@ -35,7 +35,6 @@ exports.default = () => __awaiter(void 0, void 0, void 0, function* () {
     }
     let rootDir = (yield Cli_1.default.in("Q. If you want to change the root path, enter. ()")).toString();
     setting.rootDir = rootDir;
-    console.log(setting);
     Cli_1.default.br().outData({
         "Thread": setting.thread ? setting.thread.toString() : "",
         "rootPath": setting.rootDir,

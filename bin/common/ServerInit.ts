@@ -8,6 +8,7 @@ export default interface ServerInit{
     sslCert?: string,
     sslCa?: Array<string>,
     port?: number,
+    timeout?: number,
     callback?: Function,
     modules?: any,
 }
