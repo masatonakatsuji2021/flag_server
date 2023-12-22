@@ -1,6 +1,7 @@
 import FlagCLI from "@flagfw/flag/bin/Cli";
 import ServerUtil from "@flagfw/server/bin/common/Util";
 import Setting from "@flagfw/server/bin/common/Setting";
+import * as fs from "fs";
 import * as os from "os";
 
 export default async ()=>{
@@ -52,11 +53,12 @@ export default async ()=>{
     }
 
     if(status){
-
-
+        const settingJson = JSON.stringify(setting, null, "  ");
+        fs.writeFileSync(ServerUtil.getHome() + "/" + ServerUtil.setting, settingJson);
+        FlagCLI.br().greenn("..... Server Setting Complete!");
     }  
     else{
-        FlagCLI.redn("..... Server Setting Cancal!");
+        FlagCLI.br().redn("..... Server Setting Cancal!");
     }
 
 };

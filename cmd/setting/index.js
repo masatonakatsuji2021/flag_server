@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const Cli_1 = require("@flagfw/flag/bin/Cli");
 const Util_1 = require("@flagfw/server/bin/common/Util");
+const fs = require("fs");
 const os = require("os");
 exports.default = () => __awaiter(void 0, void 0, void 0, function* () {
     Cli_1.default.outn("Server Setting.").br().indent(2);
@@ -47,8 +48,11 @@ exports.default = () => __awaiter(void 0, void 0, void 0, function* () {
         status = true;
     }
     if (status) {
+        const settingJson = JSON.stringify(setting, null, "  ");
+        fs.writeFileSync(Util_1.default.getHome() + "/" + Util_1.default.setting, settingJson);
+        Cli_1.default.br().greenn("..... Server Setting Complete!");
     }
     else {
-        Cli_1.default.redn("..... Server Setting Cancal!");
+        Cli_1.default.br().redn("..... Server Setting Cancal!");
     }
 });
