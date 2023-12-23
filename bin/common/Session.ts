@@ -2,11 +2,6 @@ import Util from "@flagfw/flag/bin/Util";
 import Cookie from "@flagfw/server/bin/common/Cookie";
 import * as fs from "fs";
 
-interface SSIDCheck{
-    status: number,
-    path: string,
-}
-
 export default class Session{
 
     private wsidName : string  = "wsid";
@@ -15,23 +10,17 @@ export default class Session{
 
     private wsidLength : number = 64;
 
-    private wsidChangeTime : number = 3600;
+    private wsidCheckTime : number = 60;
+
+    private wsidMaxLimit : number = 3600 * 24 * 14;
 
     private cookie : Cookie;
 
-    public writePath : string = "./.sessions";
+    public writePath : string = "/opt/.sessions";
 
     public constructor(req ,res){
         this.cookie = new Cookie(req, res);
-
         this.wsid = this.cookie.get(this.wsidName);
-        
-        if(!this.wsid){
-            this.wsid = Util.uniqId(this.wsidLength);
-            this.cookie.set(this.wsidName, this.wsid,{
-                maxAge: this.wsidChangeTime,
-            });
-        }
     }
 
     private getWritePath(){
@@ -40,8 +29,7 @@ export default class Session{
         return spath;
     }
 
-    public ssidCheck(){
-        const spath = this.getWritePath();
+    public wsidCheck(){
 
         if(!fs.existsSync(this.writePath)){
             fs.mkdirSync(this.writePath,{
@@ -49,17 +37,70 @@ export default class Session{
             });
         }
 
-        if(!this.cookie.get(this.wsidName)){
+        let now = new Date();
 
+        if(!this.wsid){
+            this.wsidRefresh();
+            return;
         }
 
-        if(this.cookie.get(this.wsidName) !== this.wsid){
+        const spath = this.getWritePath();
+        
+        if(!fs.existsSync(spath)){
+            this.wsidRefresh();
+            return;
+        }
+    
+        let getSessionStr = fs.readFileSync(spath).toString();
+        let getSession = JSON.parse(getSessionStr);    
 
+        const limitTime = getSession.limitTime;
+            
+        if(now.getTime() > limitTime){
+            this.wsidRefresh();
+        }
+    }
+
+    public wsidRefresh(){
+        const newWsid = Util.uniqId(this.wsidLength);
+        const now = new Date();
+
+        let newPath = this.writePath + "/" + newWsid;
+        newPath = newPath.split("//").join("/");
+
+        let sdata;
+        if(this.wsid){
+            let oldPath = this.writePath + "/" + this.wsid;
+            oldPath = oldPath.split("//").join("/");
+            
+            if(fs.existsSync(oldPath)){
+                fs.renameSync(oldPath, newPath);
+                const sdataStr = fs.readFileSync(newPath).toString();
+                sdata = JSON.parse(sdataStr);
+            }
+            else{
+                sdata = {};
+            }
+        }
+        else{
+            sdata = {};
         }
 
+        const limitTime = now.getTime() + ( this.wsidCheckTime * 1000);
+
+        sdata.limitTime = limitTime;
+
+        fs.writeFileSync(newPath, JSON.stringify(sdata));
+
+        this.wsid = newWsid;
+        this.cookie.set(this.wsidName, this.wsid, {
+            maxAge: this.wsidMaxLimit,
+        });
     }
 
     public get(name? : string){
+        this.wsidCheck();
+
         const spath = this.getWritePath();
 
         if(!fs.existsSync(spath)){
@@ -78,8 +119,9 @@ export default class Session{
     }
 
     public set(name : string, value : any){
-        let spath = this.writePath + "/" + this.wsid;
-        spath = spath.split("//").join("/");
+        this.wsidCheck();
+
+        const spath = this.getWritePath();
 
         let sdata = this.get();
         if(!sdata){
@@ -87,6 +129,23 @@ export default class Session{
         }
 
         sdata[name] = value;
+
+        sdata = JSON.stringify(sdata);
+        fs.writeFileSync(spath, sdata);
+        return this;
+    }
+
+    public delete(name : string){
+        this.wsidCheck();
+
+        const spath = this.getWritePath();
+
+        let sdata = this.get();
+        if(!sdata){
+            sdata = {};
+        }
+
+        delete sdata[name];
 
         sdata = JSON.stringify(sdata);
         fs.writeFileSync(spath, sdata);
