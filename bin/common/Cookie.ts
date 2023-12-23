@@ -4,7 +4,8 @@ export default class Cookie{
 
     private req = null;
     private res = null;
-    private setCookies = [];
+    private addCookies = {};
+    private setCookieStrs = [];
 
     public constructor(req, res){
         this.req = req;
@@ -13,19 +14,35 @@ export default class Cookie{
 
     /**
      * get
+     * get Cookie data. (all Data).
+     * @returns 
+     */
+    public get() : Object;
+
+    /**
+     * get
      * get Cookie data.
      * @param {string} name? get cookie name 
      * @returns 
      */
-    public get(name? : string){    
+    public get(name : string) : string;
+
+    public get(name? : string){
         const _cookie = this.req.headers.cookie;
     
         if(!_cookie){
             return;
         }
     
-        const cookie = querystring.parse(_cookie,"; ");
-    
+        let cookie = querystring.parse(_cookie,"; ");
+
+        const c = Object.keys(this.addCookies);
+        for(let n = 0 ; n < c.length ; n++){
+            const key = c[n];
+            const val = this.addCookies[key];
+            cookie[key] = val;
+        }
+
         if(name){
             if(cookie[name]){
                 return cookie[name];
@@ -46,6 +63,8 @@ export default class Cookie{
      */
     public set(name : string, value : any, option? : any){
         let cookieStr =  name + "=" + value;
+
+        this.addCookies[name] = value;
 
         if(!option){
             option = {};
@@ -75,9 +94,9 @@ export default class Cookie{
             cookieStr += "; HttpOnly";
         }
 
-        this.setCookies.push(cookieStr);
+        this.setCookieStrs.push(cookieStr);
 
-        this.res.setHeader("set-cookie", this.setCookies);
+        this.res.setHeader("set-cookie", this.setCookieStrs);
 
         return this;
     }
