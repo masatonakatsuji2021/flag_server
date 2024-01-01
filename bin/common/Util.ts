@@ -33,6 +33,10 @@ export default class ServerUtil{
 
         let servers = [];
 
+        if(!fs.existsSync(ServerUtil.getHome())) {
+            return servers;
+        }
+
         const search = fs.readdirSync(ServerUtil.getHome());
         
         for(let n = 0 ; n < search.length ; n++){
@@ -103,6 +107,10 @@ export default class ServerUtil{
     public static getUsePorts(status? : number){
 
         let ports = [];
+
+        if(!fs.existsSync(ServerUtil.getHome())) {
+            return ports;
+        }
 
         const search = fs.readdirSync(ServerUtil.getHome());
         

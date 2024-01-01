@@ -19,6 +19,9 @@ class ServerUtil {
     }
     static getServers(status) {
         let servers = [];
+        if (!fs.existsSync(ServerUtil.getHome())) {
+            return servers;
+        }
         const search = fs.readdirSync(ServerUtil.getHome());
         for (let n = 0; n < search.length; n++) {
             const serverName = search[n];
@@ -72,6 +75,9 @@ class ServerUtil {
     }
     static getUsePorts(status) {
         let ports = [];
+        if (!fs.existsSync(ServerUtil.getHome())) {
+            return ports;
+        }
         const search = fs.readdirSync(ServerUtil.getHome());
         for (let n = 0; n < search.length; n++) {
             const sinit = ServerUtil.getServer(search[n]);

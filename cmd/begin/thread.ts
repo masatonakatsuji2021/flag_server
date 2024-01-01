@@ -8,6 +8,11 @@ import https from "./https";
 // @ts-ignore
 if(cluster.isPrimary){
 
+    if(ServerUtil.getServers(0).length == 0){
+        FlagCLI.red("[ERROR] ").outn("Terminate server LISten because there are no servers to deploy.");
+        process.exit();
+    }
+
     let workers = [];
     const loadCluster = ()=>{
 

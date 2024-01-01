@@ -17,6 +17,10 @@ const http_1 = require("./http");
 const https_1 = require("./https");
 // @ts-ignore
 if (cluster.isPrimary) {
+    if (Util_1.default.getServers(0).length == 0) {
+        Cli_1.default.red("[ERROR] ").outn("Terminate server LISten because there are no servers to deploy.");
+        process.exit();
+    }
     let workers = [];
     const loadCluster = () => {
         const setting = Util_1.default.getSetting();
